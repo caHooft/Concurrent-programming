@@ -1,7 +1,59 @@
 #include <fstream>
-#include <iostream>>
+#include <complex> // if you make use of complex number facilities in C++
+#include <iostream>
 using namespace std;
 
+template <class T> struct RGB { T r, g, b; };
+
+template <class T>
+class Matrix {
+public:
+	Matrix(const size_t rows, const size_t cols) : _rows(rows), _cols(cols) {
+		_matrix = new T*[rows];
+		for (size_t i = 0; i < rows; ++i) {
+			_matrix[i] = new T[cols];
+		}
+	}
+	Matrix(const Matrix &m) : _rows(m._rows), _cols(m._cols) {
+		_matrix = new T*[m._rows];
+		for (size_t i = 0; i < m._rows; ++i) {
+			_matrix[i] = new T[m._cols];
+			for (size_t j = 0; j < m._cols; ++j) {
+				_matrix[i][j] = m._matrix[i][j];
+			}
+		}
+	}
+	~Matrix() {
+		for (size_t i = 0; i < _rows; ++i) {
+			delete[] _matrix[i];
+		}
+		delete[] _matrix;
+	}
+	T *operator[] (const size_t nIndex)
+	{
+		return _matrix[nIndex];
+	}
+	size_t width() const { return _cols; }
+	size_t height() const { return _rows; }
+protected:
+	size_t _rows, _cols;
+	T **_matrix;
+};
+
+// Portable PixMap image
+class PPMImage : public Matrix<RGB<unsigned char> >
+{
+public:
+	PPMImage(const size_t height, const size_t width) : Matrix(height, width) { }
+	void save(const std::string &filename)
+	{
+		std::ofstream out(filename, std::ios_base::binary);
+		out << "P6" << std::endl << _cols << " " << _rows << std::endl << 255 << std::endl;
+		for (size_t y = 0; y < _rows; y++)
+			for (size_t x = 0; x < _cols; x++)
+				out << _matrix[y][x].r << _matrix[y][x].g << _matrix[y][x].b;
+	}
+};
 int findMandelbrot(double cr, double ci, int max_iterations)
 {
 	int i = 0;
@@ -32,35 +84,40 @@ double mapToImaginary(int y, int imageHeight, double minI, double maxI)
 int main()
 {
 	// Get the required input values from file...
-	ifstream fin("input.txt");
-	int imageWidth, imageHeight, maxN;
-	double minR, maxR, minI, maxI;
+	//ifstream fin("input.txt");
 
-	if (!fin)
-	{
-		cout << "Could not open file!" << endl;
-		return 1;
-	}
+	const unsigned width = 512;
+	const unsigned height = 512;
+	int maxN = 255;
+	PPMImage image(height, width);
 
-	fin >> imageWidth >> imageHeight >> maxN;
-	fin >> minR >> maxR >> minI >> maxI;
-	fin.close(); // Not necessary, good practice :D
+	//int imageWidth, imageHeight, maxN;
+	double minR = -1.5, maxR = 0.7, minI = -1, maxI =1;
+
+	//if (!fin)
+	//{
+	//	cout << "Could not open file!" << endl;
+	//	return 1;
+	//}
+
+	//fin >> imageWidth >> imageHeight >> maxN;
+	//fin >> minR >> maxR >> minI >> maxI;
 
 	// Open the output file, write the PPM header...
 	ofstream fout("output_image.ppm");
 	fout << "P3" << endl; // "Magic Number" - PPM file
-	fout << imageWidth << " " << imageHeight << endl; // Dimensions
+	fout << width << " " << height << endl; // Dimensions
 	fout << "255" << endl; // Maximum value of a pixel R,G,B value...
 
 	// For every pixel...
-	for (int y = 0; y < imageHeight; y++) // Rows...
+	for (int y = 0; y < height; y++) // Rows...
 	{
-		for (int x = 0; x < imageWidth; x++) // Pixels in row (columns)...
+		for (int x = 0; x < width; x++) // Pixels in row (columns)...
 		{
 			// ... Find the real and imaginary values for c, corresponding to that
 			//     x, y pixel in the image.
-			double cr = mapToReal(x, imageWidth, minR, maxR);
-			double ci = mapToImaginary(y, imageHeight, minI, maxI);
+			double cr = mapToReal(x, width, minR, maxR);
+			double ci = mapToImaginary(y, height, minI, maxI);
 
 			// ... Find the number of iterations in the Mandelbrot formula
 			//     using said c.
@@ -78,6 +135,6 @@ int main()
 	}
 	fout.close();
 
-	cout << "Finished!" << endl;
+	image.save("mandelbrot.ppm");
 	return 0;
 }
