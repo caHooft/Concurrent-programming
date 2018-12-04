@@ -94,15 +94,6 @@ int main()
 	//int imageWidth, imageHeight, maxN;
 	double minR = -1.5, maxR = 0.7, minI = -1, maxI =1;
 
-	//if (!fin)
-	//{
-	//	cout << "Could not open file!" << endl;
-	//	return 1;
-	//}
-
-	//fin >> imageWidth >> imageHeight >> maxN;
-	//fin >> minR >> maxR >> minI >> maxI;
-
 	// Open the output file, write the PPM header...
 	ofstream fout("output_image.ppm");
 	fout << "P3" << endl; // "Magic Number" - PPM file
