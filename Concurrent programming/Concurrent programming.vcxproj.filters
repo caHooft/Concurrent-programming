@@ -20,10 +20,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="Homework1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Concurrent programming.cpp">
+    <ClCompile Include="Homework2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
