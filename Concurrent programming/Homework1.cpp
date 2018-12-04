@@ -1,8 +1,9 @@
-#include <fstream>
-#include <iostream>
-#include <complex>
+// mandelbrot.cpp
+// compile with: g++ -std=c++11 mandelbrot.cpp -o mandelbrot
+// view output with: eog mandelbrot.ppm
 
-using namespace std;
+#include <fstream>
+#include <complex> // if you make use of complex number facilities in C++
 
 template <class T> struct RGB { T r, g, b; };
 
@@ -48,7 +49,6 @@ public:
 	PPMImage(const size_t height, const size_t width) : Matrix(height, width) { }
 	void save(const std::string &filename)
 	{
-		//int max_iteration = _rows * _cols;
 		std::ofstream out(filename, std::ios_base::binary);
 		out << "P6" << std::endl << _cols << " " << _rows << std::endl << 255 << std::endl;
 		for (size_t y = 0; y < _rows; y++)
@@ -57,41 +57,25 @@ public:
 	}
 };
 
-int value(int x, int y, int width, int height) {
-	complex<float> point((float)x / width - 1.5, (float)y / height - 0.5);
-	complex<float> z(0, 0);
-	int nb_iter = 0;
-	while (abs(z) < 2 && nb_iter <= 20) {
-		z = z * z + point;
-		nb_iter++;
-	}
-	if (nb_iter < 20)
-		return (255 * nb_iter) / 5;
-	else
-		return 0;
-}
-
 int main()
 {
-	const unsigned width = 400;
-	const unsigned height = 400;
+	const unsigned width = 1600;
+	const unsigned height = 1600;
 
-	ofstream my_Image("mandelbrot.ppm");
+	PPMImage image(height, width);
 
-	if (my_Image.is_open()) {
-		my_Image << "P3\n" << width << " " << height << " 255\n";
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < height; j++)
-			{
-				int val = value(i, j, width, height);
-				my_Image << val << ' ' << 0 << ' ' << 0 << "\n";
-			}
-		}
-		my_Image.close();
-	}
-	else
-		cout << "Could not open the file";
+	/*
+	image[y][x].r = image[y][x].g = image[y][x].b = 255; // white pixel
 
+	image[y][x].r = image[y][x].g = image[y][x][b] = 0; // black pixel
+
+	// red pixel
+	image[y][x].r = 255;
+	image[y][x].g = 0;
+	image[y][x].b = 0;
+	*/
+
+	image.save("mandelbrot.ppm");
 	return 0;
-
 }
+
