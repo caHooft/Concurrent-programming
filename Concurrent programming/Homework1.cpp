@@ -83,16 +83,11 @@ double mapToImaginary(int y, int imageHeight, double minI, double maxI)
 
 int main()
 {
-	// Get the required input values from file...
-	//ifstream fin("input.txt");
-
 	const unsigned width = 512;
 	const unsigned height = 512;
 	int maxN = 255;
-	PPMImage image(height, width);
-
-	//int imageWidth, imageHeight, maxN;
-	double minR = -1.5, maxR = 0.7, minI = -1, maxI =1;
+	double minR = -1.5, maxR = 0.7, minI = -1, maxI = 1;
+	PPMImage image(height, width);	
 
 	// Open the output file, write the PPM header...
 	ofstream fout("output_image.ppm");
