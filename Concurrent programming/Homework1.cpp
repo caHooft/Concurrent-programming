@@ -1,3 +1,7 @@
+// mandelbrot.cpp
+// compile with: g++ -std=c++11 mandelbrot.cpp -o mandelbrot
+// view output with: eog mandelbrot.ppm
+
 #include <fstream>
 #include <complex> // if you make use of complex number facilities in C++
 #include <iostream>
@@ -7,7 +11,6 @@ using namespace std;
 template <class T> struct RGB { T r, g, b; };
 
 template <class T>
-
 class Matrix {
 public:
 	Matrix(const size_t rows, const size_t cols) : _rows(rows), _cols(cols) {
@@ -49,137 +52,39 @@ public:
 	PPMImage(const size_t height, const size_t width) : Matrix(height, width) { }
 	void save(const std::string &filename)
 	{
-		int maxN = 255;
-		double minR = -1.5, maxR = 0.7, minI = -1, maxI = 1;
-		const unsigned width = 512, height = 512;
-
-		//std::ofstream out(filename, std::ios_base::binary);
-		//out << "P6" << std::endl << _cols << " " << _rows << std::endl << 255 << std::endl;
 		std::ofstream out(filename, std::ios_base::binary);
-		out << "P3" << endl; // "Magic Number" - PPM file
-		out << width << " " << height << endl; // Dimensions
-		out << "255" << endl; // Maximum value of a pixel R,G,B value...
+		out << "P6" << std::endl << _cols << " " << _rows << std::endl << 255 << std::endl;
 		for (size_t y = 0; y < _rows; y++)
 			for (size_t x = 0; x < _cols; x++)
-			{
-				// ... Find the real and imaginary values for c, corresponding to that
-				//     x, y pixel in the image.
-				double cr = mapToReal(x, width, minR, maxR);
-				double ci = mapToImaginary(y, height, minI, maxI);
-
-				// ... Find the number of iterations in the Mandelbrot formula
-				//     using said c.
-				int n = findMandelbrot(cr, ci, maxN);
-
-				// ... Map the resulting number to an RGP value
-				int r = (n % 256);
-				int g = (n % 256);
-				int b = (n % 256);
-
-				out << r << " " << g << " " << b << " ";
-			}
-
-				
-	}
-	double mapToReal(int x, int imageWidth, double minR, double maxR)
-	{
-		double range = maxR - minR;
-		return x * (range / imageWidth) + minR;
-	}
-
-	double mapToImaginary(int y, int imageHeight, double minI, double maxI)
-	{
-		double range = maxI - minI;
-		return y * (range / imageHeight) + minI;
-	}
-
-	int findMandelbrot(double cr, double ci, int max_iterations)
-	{
-		int i = 0;
-		double zr = 0.0, zi = 0.0;
-		while (i < max_iterations && zr * zr + zi * zi < 4.0)
-		{
-			double temp = zr * zr - zi * zi + cr;
-			zi = 2.0 * zr * zi + ci;
-			zr = temp;
-			i++;
-		}
-
-		return i;
+				out << _matrix[y][x].r << _matrix[y][x].g << _matrix[y][x].b;
 	}
 };
 
-double mapToReal(int x, int imageWidth, double minR, double maxR)
+void draw_Mandelbrot(PPMImage & image, const unsigned width, const unsigned height, double cxmin, double cxmax, double cymin, double cymax, unsigned int max_iterations)
 {
-	double range = maxR - minR;
-	return x * (range / imageWidth) + minR;
+	for (std::size_t ix = 0; ix < width; ++ix)
+		for (std::size_t iy = 0; iy < height; ++iy)
+		{
+			std::complex<double> c(cxmin + ix / (width - 1.0)*(cxmax - cxmin), cymin + iy / (height - 1.0)*(cymax - cymin));
+			std::complex<double> z = 0;
+			unsigned int iterations;
+
+			for (iterations = 0; iterations < max_iterations && std::abs(z) < 2.0; ++iterations)
+				z = z * z + c;
+
+			image[iy][ix].r = image[iy][ix].g = image[iy][ix].b = iterations;
+
+		}
 }
-
-double mapToImaginary(int y, int imageHeight, double minI, double maxI)
-{
-	double range = maxI - minI;
-	return y * (range / imageHeight) + minI;
-}
-
-int findMandelbrot(double cr, double ci, int max_iterations)
-{
-	int i = 0;
-	double zr = 0.0, zi = 0.0;
-	while (i < max_iterations && zr * zr + zi * zi < 4.0)
-	{
-		double temp = zr * zr - zi * zi + cr;
-		zi = 2.0 * zr * zi + ci;
-		zr = temp;
-		i++;
-	}
-
-	return i;
-}
-
-
 
 int main()
 {
-	const unsigned width = 512;
-	const unsigned height = 512;
-	int maxN = 255;
-	double minR = -1.5, maxR = 0.7, minI = -1, maxI = 1;
-	PPMImage image(height, width);	
+	const unsigned width = 1600;
+	const unsigned height = 1600;
 
-	// Open the output file, write the PPM header...
-	ofstream fout("output_image.ppm");
-	fout << "P3" << endl; // "Magic Number" - PPM file
-	fout << width << " " << height << endl; // Dimensions
-	fout << "255" << endl; // Maximum value of a pixel R,G,B value...
-	image.save("mandelbrot.ppm");
-	
-	
+	PPMImage image(height, width);
 
-	// For every pixel...
-	for (int y = 0; y < height; y++) // Rows...
-	{
-		for (int x = 0; x < width; x++) // Pixels in row (columns)...
-		{
-			// ... Find the real and imaginary values for c, corresponding to that
-			//     x, y pixel in the image.
-			double cr = mapToReal(x, width, minR, maxR);
-			double ci = mapToImaginary(y, height, minI, maxI);
-
-			// ... Find the number of iterations in the Mandelbrot formula
-			//     using said c.
-			int n = findMandelbrot(cr, ci, maxN);
-
-			// ... Map the resulting number to an RGP value
-			int r = (n % 256);
-			int g = (n % 256);
-			int b = (n % 256);
-
-			// ... Output it to an image
-			fout << r << " " << g << " " << b << " ";
-		}
-		fout << endl;
-	}
-	fout.close();
+	draw_Mandelbrot(image, width, height, -2.0, 0.5, -1.0, 1.0, 10);
 
 	image.save("mandelbrot.ppm");
 	return 0;
