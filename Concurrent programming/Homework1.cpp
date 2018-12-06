@@ -1,7 +1,7 @@
 // mandelbrot.cpp
 // compile with: g++ -std=c++11 mandelbrot.cpp -o mandelbrot
 // view output with: eog mandelbrot.ppm
-
+/*
 #include <fstream>
 #include <complex> // if you make use of complex number facilities in C++
 #include <iostream>
@@ -89,3 +89,4 @@ int main()
 	image.save("mandelbrot.ppm");
 	return 0;
 }
+*/
