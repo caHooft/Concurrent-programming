@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <mutex>
-
+/*
 using Vector = std::vector<int>;
 
 std::mutex mutex;
@@ -79,3 +79,4 @@ int main()
 
 	return 0;
 }
+*/

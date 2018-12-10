@@ -1,14 +1,17 @@
-// threadpool.cpp
-// Compile with:
-// g++ -std=c++11 -pthread threadpool.cpp -o threadpool
-/*
 #include <thread>
 #include <mutex>
 #include <iostream>
 #include <vector>
 #include <deque>
+#include <atomic>
 
-class ThreadPool; // forward declare
+class ThreadPool;
+
+// forward declare
+std::condition_variable ready_cv;
+std::condition_variable processed_cv;
+std::atomic<bool> ready(false);
+std::atomic<bool> processed(false);
 
 class Worker {
 public:
@@ -36,9 +39,16 @@ private:
 void Worker::operator()()
 {
 	std::function<void()> task;
+
+	// in real life you need a variable here like while(!quitProgram) or your
+	// program will never return. Similarly, in real life always use `wait_for`
+	// instead of `wait` so that periodically you check to see if you should
+	// exit the program
 	while (true)
 	{
 		std::unique_lock<std::mutex> locker(pool.queue_mutex);
+		ready_cv.wait(locker, [] {return ready.load(); });
+
 		if (pool.stop) return;
 		if (!pool.tasks.empty())
 		{
@@ -46,9 +56,8 @@ void Worker::operator()()
 			pool.tasks.pop_front();
 			locker.unlock();
 			task();
-		}
-		else {
-			locker.unlock();
+			processed = true;
+			processed_cv.notify_one();
 		}
 	}
 }
@@ -72,19 +81,18 @@ void ThreadPool::enqueue(F f)
 {
 	std::unique_lock<std::mutex> lock(queue_mutex);
 	tasks.push_back(std::function<void()>(f));
+	processed = false;
+	ready = true;
+	ready_cv.notify_one();
+	processed_cv.wait(lock, [] { return processed.load(); });
 }
 
 int main()
 {
 	ThreadPool pool(4);
 
-	// queue a bunch of "work items"
-	for (int i = 0; i < 8; ++i)
-		pool.enqueue([i]() { std::cout << "Hello from work item " << i << std::endl; });
+	for (int i = 0; i < 8; ++i) pool.enqueue([i]() { std::cout << "Text printed by worker " << i << std::endl; });
 
-	// wait for keypress to give worker threads the opportunity to finish tasks
 	std::cin.ignore();
-
 	return 0;
 }
-*/

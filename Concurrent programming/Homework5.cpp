@@ -1,8 +1,6 @@
-// tree.cpp
-// compile with: g++ -std=c++11 tree.cpp -o tree
-/*
 #include <iostream>
-
+#include <future>
+/*
 using namespace std;
 
 int valtab[127]; // used for integer values of variables
@@ -114,7 +112,11 @@ private:
 int BinaryNode::eval()
 {
 	switch (op) {
-	case '-': return (left.eval() - right.eval());
+	case '-': {
+		future<int> left_result = std::async(launch::async, [this]() { return left.eval(); });
+		future<int> right_result = std::async(launch::async, [this]() { return right.eval(); });
+		//return (left.get() - right.get());
+	}
 	case '+': return (left.eval() + right.eval());
 	case '*': return (left.eval() * right.eval());
 	default: cerr << "no operand" << endl;
