@@ -1,11 +1,12 @@
+// dotproduct.cpp
+// Compile with:
+// g++ -std=c++11 -pthread dotproduct.cpp -o dotproduct
+
 #include <thread>
 #include <vector>
 #include <iostream>
-#include <mutex>
-/*
+#include <atomic>
 using Vector = std::vector<int>;
-
-std::mutex mutex;
 
 struct DotProduct
 {
@@ -27,8 +28,7 @@ struct DotProduct
 		result = 0;
 
 		// Create threads
-		for (int i = 0; i < nr_threads; ++i)
-		{
+		for (int i = 0; i < nr_threads; ++i) {
 			R = L + delta;
 			if (i == nr_threads - 1)
 				R += remainder;
@@ -36,8 +36,7 @@ struct DotProduct
 			L = R;
 		}
 		// Join threads
-		for (auto &thread : workers)
-		{
+		for (auto &thread : workers) {
 			thread.join();
 		}
 
@@ -49,16 +48,12 @@ private:
 	const Vector &b;
 
 	std::vector<std::thread> workers;
-	int result;
+	std::atomic <int> result;
 
 	void partial_dot_product(int L, int R)
 	{
-
-		for (int i = L; i < R; ++i)
-		{
-			mutex.lock();
+		for (int i = L; i < R; ++i) {
 			result += a[i] * b[i];
-			mutex.unlock();
 		}
 	}
 
@@ -79,4 +74,4 @@ int main()
 
 	return 0;
 }
-*/
+
