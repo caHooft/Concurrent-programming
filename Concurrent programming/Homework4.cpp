@@ -1,7 +1,7 @@
 // dotproduct.cpp
 // Compile with:
 // g++ -std=c++11 -pthread dotproduct.cpp -o dotproduct
-
+/*
 #include <thread>
 #include <vector>
 #include <iostream>
@@ -74,4 +74,4 @@ int main()
 
 	return 0;
 }
-
+*/

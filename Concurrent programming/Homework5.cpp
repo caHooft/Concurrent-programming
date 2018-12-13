@@ -1,13 +1,14 @@
 #include <iostream>
 #include <future>
-/*
+
 using namespace std;
 
 int valtab[127]; // used for integer values of variables
 
 class Tree; // forward declare
 
-class Node {
+class Node 
+{
 protected:
 	Node() { use = 1; }
 	virtual void print(ostream &os) = 0;
@@ -19,16 +20,20 @@ private:
 	int use; // reference count
 };
 
-class Tree {
+class Tree 
+{
 public:
 	Tree(int n); // constant
 	Tree(char id); // variable
 	Tree(char op, Tree t); // unary operator
 	Tree(char op, Tree left, Tree right); // binary operator
 	Tree(const Tree &t) { p = t.p; ++p->use; }
-	~Tree() { if (--p->use == 0) delete p; }
+	~Tree()
+	{ 
+		if (--p->use == 0) delete p; 
+	}
 	void operator=(const Tree &t);
-	int eval() { return p->eval(); }
+	int eval() 	{ return p->eval(); }
 private:
 	friend class Node;
 	friend ostream& operator<<(ostream &os, const Tree &t);
@@ -49,16 +54,21 @@ ostream& operator<<(ostream &os, const Tree &t)
 	return os;
 }
 
-class LeafNode : public Node {
+class LeafNode : public Node 
+{
 private:
 	friend class Tree;
 	void print(ostream &os) = 0;
 	virtual int eval() = 0;
 };
 
-class IntNode : public LeafNode {
+class IntNode : public LeafNode 
+{
 public:
-	int eval() { return n; }
+	int eval() 
+	{ 
+		return n;
+	}
 private:
 	friend class Tree;
 	int n;
@@ -66,7 +76,8 @@ private:
 	IntNode(int k) : n(k) { }
 };
 
-class IdNode : public LeafNode {
+class IdNode : public LeafNode 
+{
 public:
 	int eval() { return valtab[name]; }
 private:
@@ -76,7 +87,8 @@ private:
 	IdNode(char id) : name(id) { }
 };
 
-class UnaryNode : public Node {
+class UnaryNode : public Node 
+{
 public:
 	int eval();
 private:
@@ -89,15 +101,26 @@ private:
 
 int UnaryNode::eval()
 {
-	switch (op) {
-	case '-': return (-opnd.eval());
-	case '+': return (+opnd.eval());
-	default: cerr << "no operand" << endl;
+	switch (op) 
+	{
+	case '-':
+	{
+		return (-opnd.eval());
+	}
+	case '+': 
+	{
+		return (+opnd.eval());
+	}
+	default:
+	{
+		cerr << "no operand" << endl;
 		return 0;
+	}
 	}
 }
 
-class BinaryNode : public Node {
+class BinaryNode : public Node 
+{
 public:
 	int eval();
 private:
@@ -111,14 +134,24 @@ private:
 
 int BinaryNode::eval()
 {
-	switch (op) {
-	case '-': {
+	switch (op)
+	{
+	case '-': 
+	{
 		future<int> left_result = std::async(launch::async, [this]() { return left.eval(); });
 		future<int> right_result = std::async(launch::async, [this]() { return right.eval(); });
 		//return (left.get() - right.get());
 	}
-	case '+': return (left.eval() + right.eval());
-	case '*': return (left.eval() * right.eval());
+	case '+':
+	{
+		future<int> left_result = std::async(launch::async, [this]() { return left.eval(); });
+		future<int> right_result = std::async(launch::async, [this]() { return right.eval(); });
+		//return (left.eval() + right.eval());
+	}
+	case '*':
+	{
+		return (left.eval() * right.eval());
+	}
 	default: cerr << "no operand" << endl;
 		return 0;
 	}
@@ -140,4 +173,3 @@ int main()
 
 	return 0;
 }
-*/
