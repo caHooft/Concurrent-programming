@@ -1,6 +1,6 @@
 #include <iostream>
 #include <future>
-
+/*
 using namespace std;
 
 int valtab[127]; // used for integer values of variables
@@ -173,3 +173,4 @@ int main()
 
 	return 0;
 }
+*/
