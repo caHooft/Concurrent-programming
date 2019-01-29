@@ -1,6 +1,3 @@
-// threadpool.cpp
-// Compile with:
-// g++ -std=c++11 -pthread threadpool.cpp -o threadpool
 #include <thread>
 #include <mutex>
 #include <iostream>
@@ -8,10 +5,10 @@
 #include <deque>
 #include <atomic>
 
-class ThreadPool; // forward declare
+class ThreadPool;
+std::condition_variable ready_cv;
 
-class Worker 
-{
+class Worker {
 public:
 	Worker(ThreadPool &s) : pool(s) { }
 	void operator()();
@@ -19,8 +16,7 @@ private:
 	ThreadPool &pool;
 };
 
-class ThreadPool 
-{
+class ThreadPool {
 public:
 	ThreadPool(size_t threads);
 	template<class F> void enqueue(F f);
@@ -30,6 +26,7 @@ private:
 
 	std::vector<std::thread> workers;
 	std::deque<std::function<void()>> tasks;
+
 	std::mutex queue_mutex;
 	bool stop;
 };
@@ -37,9 +34,12 @@ private:
 void Worker::operator()()
 {
 	std::function<void()> task;
+
 	while (true)
 	{
 		std::unique_lock<std::mutex> locker(pool.queue_mutex);
+		ready_cv.wait(locker, [&] {return !pool.tasks.empty() || pool.stop; });
+
 		if (pool.stop) return;
 		if (!pool.tasks.empty())
 		{
@@ -47,13 +47,6 @@ void Worker::operator()()
 			pool.tasks.pop_front();
 			locker.unlock();
 			task();
-			//aswin wil hier een wait denk ik?
-			//mag hier maar 1 conditie variable gebruiken
-		}
-
-		else 
-		{
-			locker.unlock();
 		}
 	}
 }
@@ -61,41 +54,31 @@ void Worker::operator()()
 ThreadPool::ThreadPool(size_t threads) : stop(false)
 {
 	for (size_t i = 0; i < threads; ++i)
-	{
 		workers.push_back(std::thread(Worker(*this)));
-	}
-		
 }
 
 ThreadPool::~ThreadPool()
 {
-	//aanroepen vanaf hier?
 	stop = true; // stop all threads
-
+	ready_cv.notify_all();
 	for (auto &thread : workers)
-	{
 		thread.join();
-	}
 }
 
 template<class F>
 void ThreadPool::enqueue(F f)
 {
-	//aanroepen vanaf hier?
 	std::unique_lock<std::mutex> lock(queue_mutex);
 	tasks.push_back(std::function<void()>(f));
+	ready_cv.notify_one();
 }
 
 int main()
 {
 	ThreadPool pool(4);
-	// queue a bunch of "work items"
-	for (int i = 0; i < 8; ++i)
-	{
-		pool.enqueue([i]() { std::cout << "Hello from work item " << i << std::endl; });
-	}
-	// wait for keypress to give worker threads the opportunity to finish tasks
-	std::cin.ignore();
 
+	for (int i = 0; i < 8; ++i) pool.enqueue([i]() { std::cout << "Text printed by worker " << i << std::endl; });
+
+	std::cin.ignore();
 	return 0;
 }
